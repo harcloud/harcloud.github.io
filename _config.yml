@@ -4,10 +4,10 @@
 baseurl:
 url: http://devops12.com
 date_format: "ordinal"
-title: 开发一二
-subtitle: "业余开发记录"
+title: devops12
+subtitle: "开发一二"
 description: "魏老师的个人博客"
-keywords: 开发一二, Huan Wei, huanwei
+keywords: devops12, 开发一二, Huan Wei, huanwei
 favicon: /favicon.ico
 timezone: Asia/Shanghai
 encoding: "utf-8"
