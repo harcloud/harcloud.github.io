@@ -2,7 +2,7 @@
 #   Main Configs   #
 # ---------------- #
 baseurl:
-url: https://huanwei.github.io
+url: http://devops12.com
 date_format: "ordinal"
 title: 开发一二
 subtitle: "业余开发记录"
@@ -77,7 +77,7 @@ collections:
         output: true
         permalink: /wiki/:path/
 
-repository: mzlogin/mzlogin.github.io
+repository: huanwei/huanwei.github.io
 
 # ---------------- #
 #      Socials     #
