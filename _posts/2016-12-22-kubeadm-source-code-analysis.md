@@ -2,10 +2,11 @@
 layout: post
 title: kubeadm源码分析
 categories: devops
-description: Kubernetes v1.5.1版本中kubeadm模块的源码分析。
+description: kubeadm源码分析
 keywords: Kubernetes, kubeadm
 ---
 
+最近分析了一下Kubernetes中kubeadm模块的源码。
 
 ### 说明
 以下源码分析基于 kubernetes v1.5.1 版本（目前的最新版本，released 8 days ago），与其他版本不一定一致。
