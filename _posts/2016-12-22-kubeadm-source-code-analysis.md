@@ -513,7 +513,7 @@ func (r *Reset) Run(out io.Writer) error {
 	// Don't check for errors here, since umount will return a non-zero exit code if there is no directories to umount
 	exec.Command("sh", "-c", "cat /proc/mounts | awk '{print $2}' | grep '/var/lib/kubelet' | xargs umount").Run()
 
-	//删除之前kubeadm吸入的配置文件目录 /etc/kubernetes
+	//删除之前kubeadm创建的配置文件目录 /etc/kubernetes
 	resetConfigDir("/etc/kubernetes/")
 
 	//删除文件目录/var/lib/kubelet 和 /var/lib/etcd
