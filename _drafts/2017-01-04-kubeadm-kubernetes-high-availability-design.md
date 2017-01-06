@@ -37,6 +37,7 @@ kubernetes的所有信息都存在这里创建的etcd。
 首先在master1节点部署一个vip
 略。
 
+
 ##创建kubernetes集群
 kubeadm init命令初始化master1，可以参考我写的文档。
 注意将etcd指向上面创建的etcd集群，将master ip指向vip。
