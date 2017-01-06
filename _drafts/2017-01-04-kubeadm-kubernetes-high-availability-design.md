@@ -1,8 +1,8 @@
 ---
 layout: post
-title: kubernetes集群高可用架构设计及实现
+title: kubernetes集群高可用架构及实现
 categories: DevOps
-description: kubernetes集群高可用架构设计及实现
+description: kubernetes集群高可用架构及实现
 keywords: Kubernetes, kubeadm
 ---
 
@@ -94,7 +94,7 @@ dnsmasq则是一个简单的域名服务、缓存和转发工具。这里主要�
 步骤：
 1)导出kube-dns组件的原yaml文件；
 ```
-
+kubectl get deployment kube-dns -n kube-system -o yaml > kube-dns-deployment.yaml
 ```
 
 2)改变其nodeSelector
@@ -105,27 +105,24 @@ nodeSelector:
 ```
 3)删除原先kube-dns的Deployment
 ```
-
+kubectl delete deployment kube-dns -n kube-system
 ```	
 4)部署改造后的kube-dns组件
 ```
-
+kubectl apply -f kube-dns-deployment.yaml
 ```
 5)对kube-dns组件扩容
 这里按master节点个数，对其进行扩容
 ```
-
+kubectl scale deployment kube-dns -n kube-system --replicas=3
 ```
-改造后可以看到，新的kube-dns组件部署在各master节点
-```
-
-```
+改造后可以看到，新的kube-dns组件部署在各master节点。
 
 方案2：DaemonSet方式
 步骤：
-1)跟上面一样，导出kube-dns组件的原yaml文件；
+1)导出kube-dns组件的原yaml文件；
 ```
-
+kubectl get deployment kube-dns -n kube-system -o yaml > kube-dns-daemonset.yaml
 ```
 
 2)改造为DaemonSet
@@ -134,15 +131,16 @@ nodeSelector:
 
 3)删除原先kube-dns的Deployment
 ```
-
+kubectl delete deployment kube-dns -n kube-system
 ```	
 4)部署改造后的kube-dns组件
+```
+kube-dns-daemonset.yaml
+```
 实际上面改造DaemonSet的时候，可以参考这里部署时命令行返回的提示，根据提示内容作相应的调整即可。
 
 改造后可以看到，新的kube-dns组件以DaemonSet的形式部署在各master节点。
-```
 
-```
 
 
 ##改造kube-discovery组件
@@ -157,10 +155,7 @@ annotations:
 由于kube-discovery的主要功能是证书及token等配置的管理与分发，并且后续的node节点加入时只需要一个简单的master ip信息，因此将kube-discovery限制到了master节点运行，以此统一服务的入口。
 
 因此这里也可以不改造。
-对其扩容，指定replicas=3，即可看到其均匀分布在各master节点：
-```
-
-```
+对其扩容，指定replicas=3，即可看到其均匀分布在各master节点。
 
 ##kube-controller-manager组件和kube-scheduler组件
 查看两者的yaml文件，发现两者已实现自动leader-elect，因此无需对其进行任何修改。
@@ -180,7 +175,7 @@ Environment="KUBELET_DNS_ARGS=--cluster-dns=10.0.0.10 --cluster-domain=cluster.l
 
 ##master节点集群的运维
 ###故障及恢复
-####进程故障及恢复
+####组件进程故障及恢复
 监控：
 监控各master节点的kubelet等k8s进程是否存活。
 故障处理：
@@ -188,19 +183,21 @@ Environment="KUBELET_DNS_ARGS=--cluster-dns=10.0.0.10 --cluster-domain=cluster.l
 故障的恢复：
 重启该节点的kubelet进程，重启该节点keepalived
 
-####网络故障及恢复
+####节点网络故障及恢复
+监控：
+监控各master节点间网络是否连通。
+故障处理：
+摘除连通失败的节点，杀掉该节点的keepalived，防止该节点可能priority较高，重新接入集群后造成keepalived split brain问题。
+故障的恢复：
+节点重新接入集群后，重启该节点keepalived。
 
-
-####Node故障及恢复
-说明：这里的Node指master节点所在虚拟机或物理机。
+####节点宕机故障及恢复
 监控：
 监控各master节点所在Node是否存活。
 故障处理：
 无需处理
 故障的恢复：
 重启该Node，并重启kubelet等进程，重启该节点keepalived
-
-
 
 
 
@@ -212,7 +209,7 @@ Environment="KUBELET_DNS_ARGS=--cluster-dns=10.0.0.10 --cluster-domain=cluster.l
 这里我是先用kubectl run命令部署，然后导出，yaml文件，改造一下，指定nodeSelector，然后删除deployment，再使用kubectl apply -f 命令重新部署。
 
 ```
-#扩容
+#扩容前
 [root@10-10-102-93 ~]# kubectl get pods -o wide
 NAME                      READY     STATUS    RESTARTS   AGE       IP          NODE
 logapi-1223020174-37mbb   1/1       Running   0          3m        10.34.0.4   10-10-103-96.node
