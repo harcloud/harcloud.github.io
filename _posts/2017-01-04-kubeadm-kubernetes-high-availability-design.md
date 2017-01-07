@@ -8,13 +8,6 @@ keywords: Kubernetes, kubeadm
 
 本文是基于kubeadm方式部署的kubernetes集群高可用架构设计。阅读对象为熟悉kubernetes及kubeadm基本概念的同学。
 
-### 说明
-本方案基于 kubernetes v1.4.5 版本，理论上kubernetes v1.4版本以上都应该适用。
-实验环境：CentOS 7.2
-
-### 阅读对象
-阅读对象为熟悉kubernetes和kubeadm基本概念的同学。
-
 # 1 背景说明
 从kubernetes 1.4版本开始，kubeadm部署工具的出现使得部署一个单master节点的kubernetes集群变得易如反掌，简单来说，在准备好集群依赖的docker环境、相关组件安装的rpm包及docker镜像包的情况下，接下来只需执行两条命令（在master节点执行kubeadm init命令初始化集群、生成token，然后在node节点逐个执行kubeadm join命令加入集群），这样分分钟就能把一个kubernetes集群搭建起来，最后部署Calico/Canal/Romana/Weave等插件形式的容器网络方案，该kubernetes集群基本上就能投入小规模使用环境。
 
@@ -27,6 +20,8 @@ keywords: Kubernetes, kubeadm
 实现master节点的高可用。
 
 # 3 具体方案
+本方案基于 kubernetes v1.4.5 版本，理论上kubernetes v1.4版本以上都应该适用。
+实验环境：CentOS 7.2
 ## 3.1 集群规划
 | 服务器  | IP | 用途 | 
 |:----|:----:|:----:|
