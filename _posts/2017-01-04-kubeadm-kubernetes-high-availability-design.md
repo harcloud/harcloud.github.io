@@ -704,27 +704,34 @@ local0.* /var/log/keepalived.log
 ```
 
 # 4 master节点集群的运维
+
 ## 4.1 组件进程故障及恢复
 监控：
 监控各master节点的kubelet等k8s进程是否存活。
+
 故障处理：
 如发现kubelet进程挂掉，则杀掉该节点keepalived
+
 故障的恢复：
 重启该节点的kubelet进程，重启该节点keepalived
 
 ## 4.2 节点网络故障及恢复
 监控：
 监控各master节点间网络是否连通。
+
 故障处理：
 摘除连通失败的节点，杀掉该节点的keepalived，防止该节点可能priority较高，重新接入集群后造成keepalived split brain问题。
+
 故障的恢复：
 节点重新接入集群后，重启该节点keepalived。
 
 ## 4.3 节点宕机故障及恢复
 监控：
 监控各master节点所在Node是否存活。
+
 故障处理：
 无需处理
+
 故障的恢复：
 重启该Node，并重启kubelet等进程，重启该节点keepalived
 
@@ -733,6 +740,7 @@ local0.* /var/log/keepalived.log
 # 5 可用性测试
 
 ## 5.1 运维层测试
+
 ### 测试进程故障及恢复
 
 ### 测试网络故障及恢复
@@ -740,6 +748,7 @@ local0.* /var/log/keepalived.log
 ### 测试机器故障及恢复
 
 ## 5.2 应用层测试
+
 测试当master2节点故障时，对容器化应用进行弹性伸缩、滚动更新、自我恢复等测试。
 说明：这里的logapi是一个简单的微服务，用以向客户端提供集群日志的api服务。
 注意：部署应用的时候，良好的习惯是以yaml方式部署，这里可以指定nodeSelector为上面设定的label。
