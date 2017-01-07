@@ -21,7 +21,7 @@ keywords: Kubernetes, kubeadm
 实现master节点组件的高可用；
 实现master节点的高可用。
 
-# 3 具体方案
+# 3 方案及实现
 本方案基于 kubernetes v1.4.5 版本，理论上kubernetes v1.4版本以上都应该适用；
 实验环境：CentOS 7.2
 
