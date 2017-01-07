@@ -10,7 +10,9 @@ keywords: Kubernetes, kubeadm
 
 文章有点长，还需要一些补充。但基本点都已经列出。
 
-另外，周五傍晚我在公司内部做了一次关于这个话题的分享，ppt地址：http://www.ipresst.com/w/koz4ss/play
+另外，周五傍晚我在公司内部做了一次关于这个话题的分享。
+
+分享的PPT地址：http://www.ipresst.com/w/koz4ss/play
 
 # 1 背景说明
 
