@@ -8,6 +8,8 @@ keywords: Kubernetes, kubeadm
 
 本文是基于kubeadm方式部署的kubernetes集群高可用架构设计。阅读对象为熟悉kubernetes及kubeadm基本概念的同学。
 
+今天公司内部做了一次分享，ppt地址：http://www.ipresst.com/w/koz4ss/play
+
 # 1 背景说明
 从kubernetes 1.4版本开始，kubeadm部署工具的出现使得部署一个单master节点的kubernetes集群变得易如反掌，简单来说，在准备好集群依赖的docker环境、相关组件安装的rpm包及docker镜像包的情况下，接下来只需执行两条命令（在master节点执行kubeadm init命令初始化集群、生成token，然后在node节点逐个执行kubeadm join命令加入集群），这样分分钟就能把一个kubernetes集群搭建起来，最后部署Calico/Canal/Romana/Weave等插件形式的容器网络方案，该kubernetes集群基本上就能投入小规模使用环境。
 
@@ -624,7 +626,8 @@ global_defs {
 }
 
 vrrp_script check_k8s_master {
-    script "curl -k http://127.0.0.1:8080/healthz"
+    # 此处添加各种监控脚本
+    # script "curl -k http://127.0.0.1:8080/healthz" 
     interval 2
     weight -20
 }
@@ -741,11 +744,11 @@ local0.* /var/log/keepalived.log
 
 ## 5.1 运维层测试
 
-### 测试进程故障及恢复
+### 5.1.1 测试进程故障及恢复
 
-### 测试网络故障及恢复
+### 5.1.2 测试网络故障及恢复
 
-### 测试机器故障及恢复
+### 5.1.3 测试机器故障及恢复
 
 ## 5.2 应用层测试
 
@@ -813,4 +816,4 @@ logapi-1223020174-dlahm   1/1       Running   0          20m       10.34.0.1   1
 #自我恢复
 ```
 
-OK,结束。
+未完待续，今天有点太晚了，虽然是周末。
