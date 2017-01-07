@@ -15,19 +15,19 @@ keywords: Kubernetes, kubeadm
 ### 阅读对象
 阅读对象为熟悉kubernetes和kubeadm基本概念的同学。
 
-#1 背景说明
+# 1 背景说明
 从kubernetes 1.4版本开始，kubeadm部署工具的出现使得部署一个单master节点的kubernetes集群变得易如反掌，简单来说，在准备好集群依赖的docker环境、相关组件安装的rpm包及docker镜像包的情况下，接下来只需执行两条命令（在master节点执行kubeadm init命令初始化集群、生成token，然后在node节点逐个执行kubeadm join命令加入集群），这样分分钟就能把一个kubernetes集群搭建起来，最后部署Calico/Canal/Romana/Weave等插件形式的容器网络方案，该kubernetes集群基本上就能投入小规模使用环境。
 
 然而另一方面，基于kubeadm部署的kubernetes集群，其组件的存在形式跟以前相比发生了变化。例如master节点的一些关键组件，本来是以进程的形式存在，包括kube-apiserver、kube-dns、kube-discovery、kube-control-manager、kube-scheduler、kubernetes-cni、kube-proxy，现在这些组件则是以Pod的形式纳入kubernetes集群自己管理。此外，目前来看，不管是1.4以前版本繁琐的安装形式，还是现在通过kubeadm的简化安装，其集群的master节点始终是一个单点，这无疑是个瓶颈。
 
 从整个kubernetes集群的运维层面来看，master节点作为整个集群中负责管理和调度集群整体资源的重要基础设施，只要master节点及其组件实现了高可用，那么整个kubernetes集群基本上就实现了高可用。
 
-#2 设计目标
+# 2 设计目标
 实现master节点组件的高可用；
 实现master节点的高可用。
 
-#3 具体方案
-##3.1 集群规划
+# 3 具体方案
+## 3.1 集群规划
 | 服务器  | IP | 用途 | 
 |:----|:----:|:----:|
 | 10-10-102-91.master | 10.10.102.91 | k8s master1 | 
@@ -38,7 +38,7 @@ keywords: Kubernetes, kubeadm
 | VIP | 10.10.102.21 |  |
 确保VIP和master节点集群在同一网段。
 
-##3.2 搭建etcd集群
+## 3.2 搭建etcd集群
 搭建好etcd集群之后，配置：
 [root@localhost etcd]# vi /etc/etcd/etcd.conf
 ```
@@ -74,8 +74,8 @@ bead30a31455c82b: name=etcd02 peerURLs=http://10.10.103.97:2380 clientURLs=http:
 kubernetes的所有信息都存在这里创建的etcd。
 
 
-##3.3 搭建kubernetes集群
-###3.3.1 准备工作
+## 3.3 搭建kubernetes集群
+### 3.3.1 准备工作
 包括：
 各节点单独设置hostname：
 设置/etc/hostname：
@@ -177,7 +177,7 @@ systemctl enable kubelet
 systemctl start kubelet
 
 
-###3.3.2 初始化master1节点
+### 3.3.2 初始化master1节点
 包括：绑定VIP；kubeadm init初始化master1，指定VIP地址，指定etcd地址，指定kubernetes版本号；记录token
 
 给master1节点绑定VIP
@@ -269,7 +269,7 @@ kubeadm join --token=6c7750.6c759069627a3c78 10.10.102.21
 
 
 
-###3.3.3  搭建其他master节点
+### 3.3.3  搭建其他master节点
 将master1节点初始化的/etc/kubernetes目录复制到其他master节点即可。
 按照以上顺序安装master2节点以及master3节点
 ```
@@ -279,10 +279,10 @@ kubeadm join --token=6c7750.6c759069627a3c78 10.10.102.21
 
 
 ```
-###3.3.4  部署网络方案
+### 3.3.4  部署网络方案
 
 
-###3.3.5  加入node节点
+### 3.3.5  加入node节点
 node节点使用kubeadm join加入集群
 ```
 [root@10-10-103-96 ~]# kubeadm join --token=6c7750.6c759069627a3c78 10.10.102.21
@@ -376,7 +376,7 @@ weave-net-xmtlu                               2/2       Running   2          2m
 weave-net-yyj45                               2/2       Running   3          1m
 ```
 
-###3.3.6  各节点添加label
+### 3.3.6  各节点添加label
 目的：这样可以指定组件kube-dns、kube-discovery仅部署在master节点，logapi应用则部署在node节点上。
 由于这里我们有多个master节点，集群会将多个master节点也看作是node节点，因此如果不给node节点约定一个label的话，后面部署应用时，必然会出现应用的部分Pod会调度到master节点而部署不成功或者不妥的情况。
 
@@ -388,7 +388,7 @@ weave-net-yyj45                               2/2       Running   3          1m
 [root@10-10-102-91 ~]# kubectl label node 10-10-103-97.node kubeadm.alpha.kubernetes.io/role=node
 ```
 
-###3.3.7 改造kube-dns组件
+### 3.3.7 改造kube-dns组件
 kube-dns组件主要包括两部分：kube-dns和dnsmasq。
 我在安装调试时，查看了其组件日志，得知kube-dns主要是从kubernetes master中不停地监听变动的service和endpoint信息，并建立从service ip到service name的映射关系，对于没有service的则建立pod ip和相应域名的映射。
 kube-dns将这些信息存放在本地缓存，并监听127.0.0.1:10053提供服务。
@@ -445,7 +445,7 @@ kube-dns-daemonset.yaml
 
 改造后可以看到，新的kube-dns组件以DaemonSet的形式部署在各master节点。
 
-###3.3.8 改造kube-discovery组件
+### 3.3.8 改造kube-discovery组件
 kube-discovery 主要负责集群密钥的分发,如果这个组件不正常, 将无法正常新增节点kubeadm join；
 kube-discovery组件可以参考上面kube-dns也改造成DaemonSet的形式。
 不过，看了它的yaml文件后，发现它已经默认设定了一个以下的annotation:
@@ -460,7 +460,7 @@ annotations:
 因此这里也可以不改造。
 对其扩容，指定replicas=3，即可看到其均匀分布在各master节点。
 
-###3.3.9 kube-controller-manager组件和kube-scheduler组件
+### 3.3.9 kube-controller-manager组件和kube-scheduler组件
 kube-controller-manager和/kube-scheduler已经通过leader-elect实现了分布式锁，所以3个Master节点可以正常工作。
 [root@10-10-102-92 manifests]# vi /etc/kubernetes/manifests/kube-controller-manager.json 
 ```
@@ -528,7 +528,7 @@ kube-controller-manager和/kube-scheduler已经通过leader-elect实现了分布
 略...
 ```
 
-###3.3.10 实现kube-apiserver组件的高可用
+### 3.3.10 实现kube-apiserver组件的高可用
 kube-apiserver作为核心入口，使用keepalived 实现高可用
 keepalived模式为：主-从-从
 包括：安装keepalived；配置keepalived.conf；编写track_script脚本
@@ -613,7 +613,7 @@ NAME                  STATUS    AGE
 
 
 
-###其他的一些设置
+### 其他的一些设置
 ```
 vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 
 设置
@@ -621,11 +621,11 @@ Environment="KUBELET_DNS_ARGS=--cluster-dns=10.0.0.10 --cluster-domain=cluster.l
 与kube-dns service的cluster ip相同
 ```
 
-###etcd排错
+### etcd排错
 etcd集群的其中一个节点宕机后，重启无影响etcd
 集群的其中一个节点重装后，需要删除每一个节点的/var/lib/etcd/etcd0x ...等目录，然后systemctl restart etcd重启，然后etcdctl member list查看集群发现恢复。。否则启动etcd不成功。
 
-###keepalived日志重定向
+### keepalived日志重定向
 ```
 Keepalived默认所有的日志都是写入到/var/log/message下的，由于message的日志太多了，而Keepalived的日志又很难分离出来，所以本文提供了一个调整Keepalived日志输出路径的方法。
 具体操作步骤如下：
@@ -640,9 +640,9 @@ local0.* /var/log/keepalived.log
 注意：local0是l是字符L的小写
 ```
 
-##master节点集群的运维
-###故障及恢复
-####组件进程故障及恢复
+## master节点集群的运维
+### 故障及恢复
+#### 组件进程故障及恢复
 监控：
 监控各master节点的kubelet等k8s进程是否存活。
 故障处理：
@@ -650,7 +650,7 @@ local0.* /var/log/keepalived.log
 故障的恢复：
 重启该节点的kubelet进程，重启该节点keepalived
 
-####节点网络故障及恢复
+#### 节点网络故障及恢复
 监控：
 监控各master节点间网络是否连通。
 故障处理：
@@ -658,7 +658,7 @@ local0.* /var/log/keepalived.log
 故障的恢复：
 节点重新接入集群后，重启该节点keepalived。
 
-####节点宕机故障及恢复
+#### 节点宕机故障及恢复
 监控：
 监控各master节点所在Node是否存活。
 故障处理：
@@ -668,8 +668,8 @@ local0.* /var/log/keepalived.log
 
 
 
-##可用性测试
-###应用层测试
+## 可用性测试
+### 应用层测试
 测试当master2节点故障时，对容器化应用进行弹性伸缩、滚动更新、自我恢复等测试。
 说明：这里的logapi是一个简单的微服务，用以向客户端提供集群日志的api服务。
 注意：部署应用的时候，良好的习惯是以yaml方式部署，这里可以指定nodeSelector为上面设定的label。
@@ -734,10 +734,10 @@ logapi-1223020174-dlahm   1/1       Running   0          20m       10.34.0.1   1
 #自我恢复
 ```
 
-###运维层测试
-####测试进程故障及恢复
+### 运维层测试
+#### 测试进程故障及恢复
 
 
-####测试网络故障及恢复
+#### 测试网络故障及恢复
 
-####测试机器故障及恢复
+#### 测试机器故障及恢复
