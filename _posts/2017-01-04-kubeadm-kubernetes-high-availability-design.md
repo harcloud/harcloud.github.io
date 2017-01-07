@@ -20,9 +20,12 @@ keywords: Kubernetes, kubeadm
 实现master节点的高可用。
 
 # 3 具体方案
-本方案基于 kubernetes v1.4.5 版本，理论上kubernetes v1.4版本以上都应该适用。
+本方案基于 kubernetes v1.4.5 版本，理论上kubernetes v1.4版本以上都应该适用；
 实验环境：CentOS 7.2
+
 ## 3.1 集群规划
+本次实验中，集群的总体规划如下：
+
 | 服务器  | IP | 用途 | 
 |:----|:----:|:----:|
 | 10-10-102-91.master | 10.10.102.91 | k8s master1 | 
@@ -31,12 +34,14 @@ keywords: Kubernetes, kubeadm
 | 10-10-103-96.node | 10.10.103.96 | k8s node1, etcd01 |
 | 10-10-103-97.node | 10.10.103.97 | k8s node2, etcd02 |
 | VIP | 10.10.102.21 |  |
+
 确保VIP和master节点集群在同一网段。
 
 ## 3.2 搭建etcd集群
-搭建好etcd集群之后，配置：
-[root@localhost etcd]# vi /etc/etcd/etcd.conf
+搭建好etcd集群之后，配置/etc/etcd/etcd.conf：
+
 ```
+#[root@localhost etcd]# vi /etc/etcd/etcd.conf
 ETCD_NAME="etcd01"
 ETCD_DATA_DIR="/var/lib/etcd/etcd01"
 ETCD_LISTEN_PEER_URLS="http://10.10.103.96:2380"
@@ -48,32 +53,39 @@ ETCD_INITIAL_CLUSTER_TOKEN="huan-etcd-cluster"
 ETCD_INITIAL_CLUSTER="etcd01=http://10.10.103.96:2380,etcd02=http://10.10.103.97:2380"
 
 ```
+
 关闭防火墙：
+
 ```
 [root@localhost etcd]# iptables -F
 ```
+
 重启etcd：
+
 ```
 [root@localhost etcd]# systemctl restart etcd
 ```
+
 查看集群：
+
 ```
 [root@localhost etcd]# etcdctl member list
 521e455ec3a5e123: name=etcd01 peerURLs=http://10.10.103.96:2380 clientURLs=http://10.10.103.96:2379 isLeader=false
 bead30a31455c82b: name=etcd02 peerURLs=http://10.10.103.97:2380 clientURLs=http://10.10.103.97:2379 isLeader=true
 ```
 
-不过这里有个坑，尽量不要在master集群所在的几个节点创建etcd。
-因为kubeadm init的时候会去检查当前节点是否含有/etc/kubernetes目录以及/var/lib/etcd目录，如有这些目录会提示删除，否则init不成功。
+不过这里有个坑，尽量不要在master集群所在的几个节点创建etcd。因为kubeadm init的时候会去检查当前节点是否含有/etc/kubernetes目录以及/var/lib/etcd目录，如有这些目录会提示删除，否则init不成功。
 如果一不小心把etcd集群建在了几个master节点，那么解决办法是修改etcd安装目录。
 kubernetes的所有信息都存在这里创建的etcd。
 
 
 ## 3.3 搭建kubernetes集群
+
 ### 3.3.1 准备工作
+
 包括：
-各节点单独设置hostname：
-设置/etc/hostname：
+各节点单独设置/etc/hostname：
+
 ```
 hostnamectl --static set-hostname  10-10-102-91.master
 hostnamectl --static set-hostname  10-10-102-92.master
@@ -81,7 +93,9 @@ hostnamectl --static set-hostname  10-10-102-93.master
 hostnamectl --static set-hostname  10-10-103-96.node
 hostnamectl --static set-hostname  10-10-103-97.node
 ```
+
 设置/etc/hosts：
+
 ```
 echo '10.10.102.91 10-10-102-91.master
 10.10.102.92 10-10-102-92.master
@@ -89,7 +103,9 @@ echo '10.10.102.91 10-10-102-91.master
 10.10.103.96 10-10-103-96.node
 10.10.103.97 10-10-103-97.node'>> /etc/hosts
 ```
+
 或者直接 vi /etc/hosts 改成：
+
 ```
 127.0.0.1    10-10-102-91.master
 ::1          10-10-102-91.master
@@ -102,6 +118,7 @@ echo '10.10.102.91 10-10-102-91.master
 
 安装docker环境；加载kubernetes相关组件的docker镜像；安装kubernetes组件的相关rpm安装包；安装docker环境，加载，安装kubernetes相关组件的rpm包：
 在master1部署二进制包：
+
 ```
 cat <<EOF> /etc/yum.repos.d/k8s.repo
 [kubelet]
@@ -114,14 +131,16 @@ EOF
 yum makecache
 yum install -y socat kubelet kubeadm kubectl kubernetes-cni
 ```
+
 rpm安装方式（建议）：
+
 ```
-拷贝安装包：
+#拷贝安装包：
 share@share-ThinkCentre-E73:~/下载$ scp k8s-v1.4.5-rpms.tar.gz root@10.10.102.91:/root/
-安装：
+#安装：
 cd k8s-v1.4.5-rpms
 yum localinstall *.rpm -y
-包含：
+#包含：
 socat-1.7.2.2-5.el7.x86_64.rpm
 kubeadm-1.5.0-0.alpha.1.409.714f816a349e79.x86_64.rpm
 kubectl-1.4.1-0.x86_64.rpm
@@ -130,6 +149,7 @@ kubernetes-cni-0.3.0.1-0.07a8a2.x86_64.rpm
 ```
 
 在master1安装docker:
+
 ```
 tee /etc/yum.repos.d/docker.repo <<-'EOF'
 [dockerrepo]
@@ -146,6 +166,7 @@ yum install docker-engine -y
 rpm安装方式（建议）：
 从官方镜像仓库下载：
 https://yum.dockerproject.org/repo/main/centos/7/Packages/
+
 ```
 拷贝安装包：
 share@share-ThinkCentre-E73:~/下载$ scp docker-engine-1.12.4-1.el7.centos.x86_64.rpm  root@10.10.102.91:/root/
@@ -153,6 +174,7 @@ share@share-ThinkCentre-E73:~/下载$ scp docker-engine-1.12.4-1.el7.centos.x86_
 cd ~
 yum localinstall docker-engine-1.12.4-1.el7.centos.x86_64.rpm -y
 ```
+
 systemctl enable docker
 systemctl start docker
 systemctl status docker
@@ -160,6 +182,7 @@ systemctl status docker
 在master1 load镜像：
 tar zcvf kubernates-v1.4.5-images.tar.gz kubernates-v1.4.5-images/
 cd kubernates-v1.4.5-images
+
 ```
 tars=(etcd-amd64.tar exechealthz-amd64.tar  kube-discovery-amd64.tar kubedns-amd64.tar kube-dnsmasq-amd64.tar kube-proxy-amd64.tar  pause-amd64.tar kube-apiserver-amd64.tar kube-controller-manager-amd64.tar kube-scheduler-amd64.tar kubernetes-dashboard-amd64.tar)
 for tar in ${tars[@]} ; do
@@ -176,6 +199,7 @@ systemctl start kubelet
 包括：绑定VIP；kubeadm init初始化master1，指定VIP地址，指定etcd地址，指定kubernetes版本号；记录token
 
 给master1节点绑定VIP
+
 ```
 #绑定
 ip addr add 10.10.102.21/24 dev eth0
@@ -188,35 +212,44 @@ sudo ifconfig eth0:0 down
 
 
 master1节点初始化：
+
 ```
 kubeadm init --api-advertise-addresses=10.10.102.21 --external-etcd-endpoints=http://10.10.103.96:2379,http://10.10.103.97:2379 --use-kubernetes-version v1.4.5 
 ```
 
-如果遇到错误
+如果遇到错误：
+
 ```
 /etc/kubernetes is not empty
 /var/lib/etcd is not empty
 ```
-则执行
+
+则执行：
+
 ```
 rm -rf /etc/kubernetes
 rm -rf /var/lib/etcd
 ```
 
-如果遇到错误
+如果遇到错误：
+
 ```
 Running pre-flight checks
 preflight check errors:
 	Port 2379 is in use
 ```
-是因为前面load了etcd镜像，而这里我们将使用外部的etcd集群，因此需要把该镜像remove
+
+是因为前面load了etcd镜像，而这里我们将使用外部的etcd集群，因此需要把该镜像remove；
 执行：
+
 ```
 docker rmi etcd_imageid
 ```
+
 然后重新init即可
 
 以下是init成功的日志，记录token：
+
 ```
 [root@10-10-102-91 ~]# kubeadm init --api-advertise-addresses=10.10.102.21 --external-etcd-endpoints=http://10.10.103.96:2379,http://10.10.103.97:2379 --use-kubernetes-version v1.4.5 
 Flag --external-etcd-endpoints has been deprecated, this flag will be removed when componentconfig exists
@@ -259,32 +292,33 @@ Kubernetes master initialised successfully!
 You can now join any number of machines by running the following on each node:
 
 kubeadm join --token=6c7750.6c759069627a3c78 10.10.102.21
-
 ```
 
 
-
 ### 3.3.3  搭建其他master节点
+
 将master1节点初始化的/etc/kubernetes目录复制到其他master节点即可。
-按照以上顺序安装master2节点以及master3节点
+按照以上顺序安装master2节点以及master3节点；
+
 ```
 #复制master1 的/etc/kubernetes/并启动kubelet
 [root@10-10-102-91 ~]# scp -r /etc/kubernetes/* root@10.10.102.92:/etc/kubernetes/
 [root@10-10-102-91 ~]# scp -r /etc/kubernetes/* root@10.10.102.93:/etc/kubernetes/
-
-
 ```
+
 ### 3.3.4  部署网络方案
 
 
 ### 3.3.5  加入node节点
-node节点使用kubeadm join加入集群
+node节点使用kubeadm join加入集群：
+
 ```
 [root@10-10-103-96 ~]# kubeadm join --token=6c7750.6c759069627a3c78 10.10.102.21
 
 ```
 
-遇到错误：
+如果遇到错误：
+
 ```
 <util/tokens> validating provided token
 <node/discovery> created cluster info discovery client, requesting info from "http://10.10.102.21:9898/cluster-info/v1/?token-id=6c7750"
@@ -292,6 +326,7 @@ node节点使用kubeadm join加入集群
 <node/discovery> failed to request cluster info, will try again: [Get http://10.10.102.21:9898/cluster-info/v1/?token-id=6c7750: dial tcp 10.10.102.21:9898: getsockopt: no route to host]
 
 ```
+
 解决办法：关闭selinux防火墙
 
 ```
@@ -301,6 +336,7 @@ systemctl disable firewalld
 ```
 
 最后看到成功日志：
+
 ```
 [root@10-10-103-96 ~]# kubeadm join --token=6c7750.6c759069627a3c78 10.10.102.21
 Running pre-flight checks
@@ -333,6 +369,7 @@ Run 'kubectl get nodes' on the master to see this machine join.
 ```
 
 全部节点加入后，看到：
+
 ```
 [root@10-10-102-91 ~]# kubectl get nodes
 NAME                  STATUS    AGE
@@ -341,9 +378,10 @@ NAME                  STATUS    AGE
 10-10-102-93.master   Ready     2d
 10-10-103-96.node     Ready     2m
 10-10-103-97.node     Ready     14s
-
 ```
+
 全部节点加入后，查看集群pod情况：
+
 ```
 [root@10-10-102-91 ~]# kubectl get pods -n kube-system
 NAME                                          READY     STATUS    RESTARTS   AGE
@@ -372,6 +410,7 @@ weave-net-yyj45                               2/2       Running   3          1m
 ```
 
 ### 3.3.6  各节点添加label
+
 目的：这样可以指定组件kube-dns、kube-discovery仅部署在master节点，logapi应用则部署在node节点上。
 由于这里我们有多个master节点，集群会将多个master节点也看作是node节点，因此如果不给node节点约定一个label的话，后面部署应用时，必然会出现应用的部分Pod会调度到master节点而部署不成功或者不妥的情况。
 
@@ -392,34 +431,44 @@ dnsmasq则是一个简单的域名服务、缓存和转发工具。这里主要�
 方案1：Deployment方式
 步骤：
 1)导出kube-dns组件的原yaml文件；
+
 ```
 kubectl get deployment kube-dns -n kube-system -o yaml > kube-dns-deployment.yaml
 ```
 
-2)改变其nodeSelector
+2)改变其nodeSelector：
+
 ```
 nodeSelector:
         #beta.kubernetes.io/arch: amd64
         kubeadm.alpha.kubernetes.io/role: master
 ```
-3)删除原先kube-dns的Deployment
+
+3)删除原先kube-dns的Deployment：
+
 ```
 kubectl delete deployment kube-dns -n kube-system
 ```	
-4)部署改造后的kube-dns组件
+
+4)部署改造后的kube-dns组件：
+
 ```
 kubectl apply -f kube-dns-deployment.yaml
 ```
-5)对kube-dns组件扩容
-这里按master节点个数，对其进行扩容
+
+5)对kube-dns组件扩容：
+这里按master节点个数，对其进行扩容：
+
 ```
 kubectl scale deployment kube-dns -n kube-system --replicas=3
 ```
+
 改造后可以看到，新的kube-dns组件部署在各master节点。
 
 方案2：DaemonSet方式
 步骤：
 1)导出kube-dns组件的原yaml文件；
+
 ```
 kubectl get deployment kube-dns -n kube-system -o yaml > kube-dns-daemonset.yaml
 ```
@@ -429,13 +478,17 @@ kubectl get deployment kube-dns -n kube-system -o yaml > kube-dns-daemonset.yaml
 实际改造的时候，有不少坑，可按照下面重新部署时给出的提示作相应调整即可。
 
 3)删除原先kube-dns的Deployment
+
 ```
 kubectl delete deployment kube-dns -n kube-system
 ```	
+
 4)部署改造后的kube-dns组件
+
 ```
 kube-dns-daemonset.yaml
 ```
+
 实际上面改造DaemonSet的时候，可以参考这里部署时命令行返回的提示，根据提示内容作相应的调整即可。
 
 改造后可以看到，新的kube-dns组件以DaemonSet的形式部署在各master节点。
@@ -444,10 +497,12 @@ kube-dns-daemonset.yaml
 kube-discovery 主要负责集群密钥的分发,如果这个组件不正常, 将无法正常新增节点kubeadm join；
 kube-discovery组件可以参考上面kube-dns也改造成DaemonSet的形式。
 不过，看了它的yaml文件后，发现它已经默认设定了一个以下的annotation:
+
 ```
 annotations:
         scheduler.alpha.kubernetes.io/affinity: '{"nodeAffinity":{"requiredDuringSchedulingIgnoredDuringExecution":{"nodeSelectorTerms":[{"matchExpressions":[{"key":"kubeadm.alpha.kubernetes.io/role","operator":"In","values":["master"]}]}]}}}'
 ```
+
 其效果等同于指定nodeSelector为role=master，即默认已将kube-discovery所运行的Pod限制为必须在master节点运行。
 粗略看了其源码，其设计初衷：
 由于kube-discovery的主要功能是证书及token等配置的管理与分发，并且后续的node节点加入时只需要一个简单的master ip信息，因此将kube-discovery限制到了master节点运行，以此统一服务的入口。
@@ -457,8 +512,9 @@ annotations:
 
 ### 3.3.9 kube-controller-manager组件和kube-scheduler组件
 kube-controller-manager和/kube-scheduler已经通过leader-elect实现了分布式锁，所以3个Master节点可以正常工作。
-[root@10-10-102-92 manifests]# vi /etc/kubernetes/manifests/kube-controller-manager.json 
+
 ```
+#[root@10-10-102-92 manifests]# vi /etc/kubernetes/manifests/kube-controller-manager.json 
 {
   "kind": "Pod",
   "apiVersion": "v1",
@@ -494,8 +550,10 @@ kube-controller-manager和/kube-scheduler已经通过leader-elect实现了分布
         ],
 略...
 ```
-[root@10-10-102-92 manifests]# vi /etc/kubernetes/manifests/kube-scheduler.json 
+
+
 ```
+#[root@10-10-102-92 manifests]# vi /etc/kubernetes/manifests/kube-scheduler.json 
 {
   "kind": "Pod",
   "apiVersion": "v1",
@@ -530,19 +588,24 @@ keepalived模式为：主-从-从
 
 3个kube-apiserver实例通过keepalived+VIP方案实现主-备-备模式。
 架构：
+
 ```
 10.10.102.91 kube-apiserver主
 10.10.102.92 kube-apiserver备
 10.10.102.93 kube-apiserver备
 ```
-安装keepalived
+
+安装keepalived：
+
 ```
  yum install -y keepalived
 ```
+
 主节点关键配置：
-vi /etc/keepalived/keepalived.conf
+
 
 ```
+#vi /etc/keepalived/keepalived.conf
 ! Configuration File for keepalived
 
 global_defs {
@@ -590,12 +653,15 @@ vrrp_instance VI_1 {
 2个从节点参考主节点相应配置即可。
 
 启动keepalived：
+
 ```
 [root@10-10-102-91 keepalived]# systemctl restart keepalived
 [root@10-10-102-91 keepalived]# systemctl enable keepalived
 Created symlink from /etc/systemd/system/multi-user.target.wants/keepalived.service to /usr/lib/systemd/system/keepalived.service.
 ```
+
 在所有master节点keepalived以后，查看node情况：
+
 ```
 [root@10-10-102-91 ~]# kubectl get nodes
 NAME                  STATUS    AGE
@@ -609,6 +675,7 @@ NAME                  STATUS    AGE
 
 
 ### 其他的一些设置
+
 ```
 vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 
 设置
@@ -621,6 +688,7 @@ etcd集群的其中一个节点宕机后，重启无影响etcd
 集群的其中一个节点重装后，需要删除每一个节点的/var/lib/etcd/etcd0x ...等目录，然后systemctl restart etcd重启，然后etcdctl member list查看集群发现恢复。。否则启动etcd不成功。
 
 ### keepalived日志重定向
+
 ```
 Keepalived默认所有的日志都是写入到/var/log/message下的，由于message的日志太多了，而Keepalived的日志又很难分离出来，所以本文提供了一个调整Keepalived日志输出路径的方法。
 具体操作步骤如下：
@@ -635,9 +703,8 @@ local0.* /var/log/keepalived.log
 注意：local0是l是字符L的小写
 ```
 
-## master节点集群的运维
-### 故障及恢复
-#### 组件进程故障及恢复
+# 4 master节点集群的运维
+## 4.1 组件进程故障及恢复
 监控：
 监控各master节点的kubelet等k8s进程是否存活。
 故障处理：
@@ -645,7 +712,7 @@ local0.* /var/log/keepalived.log
 故障的恢复：
 重启该节点的kubelet进程，重启该节点keepalived
 
-#### 节点网络故障及恢复
+## 4.2 节点网络故障及恢复
 监控：
 监控各master节点间网络是否连通。
 故障处理：
@@ -653,7 +720,7 @@ local0.* /var/log/keepalived.log
 故障的恢复：
 节点重新接入集群后，重启该节点keepalived。
 
-#### 节点宕机故障及恢复
+## 4.3 节点宕机故障及恢复
 监控：
 监控各master节点所在Node是否存活。
 故障处理：
@@ -663,8 +730,16 @@ local0.* /var/log/keepalived.log
 
 
 
-## 可用性测试
-### 应用层测试
+# 5 可用性测试
+
+## 5.1 运维层测试
+### 测试进程故障及恢复
+
+### 测试网络故障及恢复
+
+### 测试机器故障及恢复
+
+## 5.2 应用层测试
 测试当master2节点故障时，对容器化应用进行弹性伸缩、滚动更新、自我恢复等测试。
 说明：这里的logapi是一个简单的微服务，用以向客户端提供集群日志的api服务。
 注意：部署应用的时候，良好的习惯是以yaml方式部署，这里可以指定nodeSelector为上面设定的label。
@@ -729,10 +804,4 @@ logapi-1223020174-dlahm   1/1       Running   0          20m       10.34.0.1   1
 #自我恢复
 ```
 
-### 运维层测试
-#### 测试进程故障及恢复
-
-
-#### 测试网络故障及恢复
-
-#### 测试机器故障及恢复
+OK,结束。
