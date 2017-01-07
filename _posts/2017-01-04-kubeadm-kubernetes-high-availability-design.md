@@ -6,9 +6,11 @@ description: kubernetes集群高可用架构及实现
 keywords: Kubernetes, kubeadm
 ---
 
-本文是基于kubeadm方式部署的kubernetes集群高可用架构设计。阅读对象为熟悉kubernetes及kubeadm基本概念的同学。
+本文主要解决kubernetes集群的高可用架构设计以及具体实现。阅读对象为熟悉kubernetes及kubeadm基本概念的同学。
 
-今天公司内部做了一次分享，ppt地址：http://www.ipresst.com/w/koz4ss/play
+文章有点长，还需要一些补充。但基本点都已经列出。
+
+另外，周五傍晚我在公司内部做了一次关于这个话题的分享，ppt地址：http://www.ipresst.com/w/koz4ss/play
 
 # 1 背景说明
 
