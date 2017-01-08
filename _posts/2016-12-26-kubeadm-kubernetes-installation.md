@@ -12,6 +12,7 @@ keywords: Kubernetes, kubeadm
 
 ```
 CentOS版本7.2，Docker版本1.12+
+kubernetes版本为v1.4.5
 10.10.102.38 10-10-102-38.master
 10.10.102.39 10-10-102-39.node
 10.10.102.40 10-10-102-40.node
