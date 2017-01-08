@@ -8,9 +8,7 @@ keywords: Kubernetes, kubeadm
 
 本文主要解决kubernetes集群的高可用架构设计以及具体实现。阅读对象为熟悉kubernetes及kubeadm基本概念的同学。
 
-文章有点长，还需要一些补充。但基本点都已经列出。
-
-另外，周五傍晚我在公司内部做了一次关于这个话题的分享。
+周五傍晚我做了一次关于这个话题的分享。
 
 分享的PPT地址：http://www.ipresst.com/w/koz4ss/play
 
@@ -49,6 +47,8 @@ keywords: Kubernetes, kubeadm
 确保VIP和master节点集群在同一网段。
 
 ## 3.2 搭建etcd集群
+
+搭建etcd集群比较简单，略。
 
 搭建好etcd集群之后，配置/etc/etcd/etcd.conf：
 
@@ -99,9 +99,9 @@ kubernetes的所有信息都存在这里创建的etcd。
 
 ### 3.3.1 准备工作
 
-包括：
+主要工作：
 
-各节点单独设置/etc/hostname：
+1）各节点单独设置/etc/hostname
 
 ```
 hostnamectl --static set-hostname  10-10-102-91.master
@@ -111,7 +111,7 @@ hostnamectl --static set-hostname  10-10-103-96.node
 hostnamectl --static set-hostname  10-10-103-97.node
 ```
 
-设置/etc/hosts：
+2）设置/etc/hosts：
 
 ```
 echo '10.10.102.91 10-10-102-91.master
@@ -133,7 +133,7 @@ echo '10.10.102.91 10-10-102-91.master
 10.10.103.97 10-10-103-97.node
 ```
 
-安装docker环境；加载kubernetes相关组件的docker镜像；安装kubernetes组件的相关rpm安装包；安装docker环境，加载，安装kubernetes相关组件的rpm包：
+3）安装docker环境；加载kubernetes相关组件的docker镜像；安装kubernetes组件的相关rpm安装包；
 
 在master1部署二进制包：
 
@@ -212,7 +212,7 @@ for tar in ${tars[@]} ; do
 done
 ```
 
-在master1启动kubelet
+最后，在master1启动kubelet：
 
 systemctl enable kubelet
 
@@ -220,9 +220,10 @@ systemctl start kubelet
 
 
 ### 3.3.2 初始化master1节点
-包括：绑定VIP；kubeadm init初始化master1，指定VIP地址，指定etcd地址，指定kubernetes版本号；记录token
+主要工作包括：
+绑定VIP；kubeadm init初始化master1，指定VIP地址，指定etcd地址，指定kubernetes版本号；记录token
 
-给master1节点绑定VIP
+1）给master1节点绑定VIP
 
 ```
 #绑定
@@ -235,7 +236,7 @@ sudo ifconfig eth0:0 down
 ```
 
 
-master1节点初始化：
+2）master1节点初始化：
 
 ```
 kubeadm init --api-advertise-addresses=10.10.102.21 --external-etcd-endpoints=http://10.10.103.96:2379,http://10.10.103.97:2379 --use-kubernetes-version v1.4.5 
@@ -334,6 +335,7 @@ kubeadm join --token=6c7750.6c759069627a3c78 10.10.102.21
 
 ### 3.3.4  部署网络方案
 
+略，这里我因为之前打了weave镜像，所以直接使用了weave;
 
 ### 3.3.5  加入node节点
 
@@ -722,7 +724,9 @@ NAME                  STATUS    AGE
 ```
 
 
-### 其他的一些设置
+### 3.3.11 附：安装调试排错
+
+1）如果安装调试过程中出错，可以参考一下这些配置。
 
 ```
 vi /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 
@@ -731,13 +735,13 @@ Environment="KUBELET_DNS_ARGS=--cluster-dns=10.0.0.10 --cluster-domain=cluster.l
 与kube-dns service的cluster ip相同
 ```
 
-### etcd排错
+2）etcd排错
 
 etcd集群的其中一个节点宕机后，重启无影响etcd
 
 集群的其中一个节点重装后，需要删除每一个节点的/var/lib/etcd/etcd0x ...等目录，然后systemctl restart etcd重启，然后etcdctl member list查看集群发现恢复。。否则启动etcd不成功。
 
-### keepalived日志重定向
+3）keepalived日志重定向
 
 ```
 Keepalived默认所有的日志都是写入到/var/log/message下的，由于message的日志太多了，而Keepalived的日志又很难分离出来，所以本文提供了一个调整Keepalived日志输出路径的方法。
@@ -803,11 +807,9 @@ local0.* /var/log/keepalived.log
 
 ## 5.1 运维层测试
 
-### 5.1.1 测试进程故障及恢复
+这里模拟了将其中一台master节点宕机，或者将其中一台master节点上关键进程kubelet进程关机，故意造成其中一台mast节点NotReady状态。
 
-### 5.1.2 测试网络故障及恢复
-
-### 5.1.3 测试机器故障及恢复
+实际环境可能需要更多测试。
 
 ## 5.2 应用层测试
 
@@ -866,16 +868,9 @@ logapi-1223020174-dlahm   1/1       Running   0          20m       10.34.0.1   1
 {"id":1,"content":"Hello, World! Request from 10.42.0.2 hostname logapi-1223020174-37mbb"}
 说明运行正常。
 
-#滚动更新
-
-
-#滚动更新后，测试应用的服务接口
-
-
-说明已经更新
-
-
-#自我恢复
+其他测试略过。
 ```
 
-未完待续，今天有点太晚了，虽然是周末。
+高可用的分析就暂时到这里。
+
+后续如有补充，会及时更新。。
