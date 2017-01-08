@@ -4,6 +4,7 @@ title: kubeadm源码分析
 categories: DevOps
 description: kubeadm源码分析
 keywords: Kubernetes, kubeadm
+author: 魏欢
 ---
 
 这两天分析了一下Kubernetes中kubeadm模块的源码。
