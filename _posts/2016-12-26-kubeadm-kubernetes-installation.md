@@ -1,26 +1,26 @@
 ---
 layout: post
-title: »ùÓÚkubeadm²¿Êğkubernetes¼¯Èº
+title: åŸºäºkubeadméƒ¨ç½²kubernetesé›†ç¾¤
 categories: DevOps
-description: »ùÓÚkubeadm²¿Êğkubernetes¼¯Èº
+description: åŸºäºkubeadméƒ¨ç½²kubernetesé›†ç¾¤
 keywords: Kubernetes, kubeadm
 ---
 
-±¾ÎÄÊÇ»ùÓÚkubeadm²¿Êğkubernetes¼¯Èº¡£
+æœ¬æ–‡æ˜¯åŸºäºkubeadméƒ¨ç½²kubernetesé›†ç¾¤ã€‚
 
-## 1 »·¾³×¼±¸
+## 1 ç¯å¢ƒå‡†å¤‡
 
 ```
-CentOS°æ±¾7.2£¬Docker°æ±¾1.12+
-kubernetes°æ±¾Îªv1.4.5
+CentOSç‰ˆæœ¬7.2ï¼ŒDockerç‰ˆæœ¬1.12+
+kubernetesç‰ˆæœ¬ä¸ºv1.4.5
 10.10.102.38 10-10-102-38.master
 10.10.102.39 10-10-102-39.node
 10.10.102.40 10-10-102-40.node
 ```
 
-## 2 ¹ØÓÚ¶ş½øÖÆÎÄ¼ş¡¢¾µÏñ°ü
+## 2 å…³äºäºŒè¿›åˆ¶æ–‡ä»¶ã€é•œåƒåŒ…
 
-ĞèÒª°²×°µÄ¶ş½øÖÆÎÄ¼ş°üÀ¨£º
+éœ€è¦å®‰è£…çš„äºŒè¿›åˆ¶æ–‡ä»¶åŒ…æ‹¬ï¼š
 
 kubelet 
 
@@ -30,31 +30,31 @@ kubectl
 
 kubernetes-cni
 
-ÆäËûÒÔ¾µÏñ°üµÄ·½Ê½°²×°¡£
+å…¶ä»–ä»¥é•œåƒåŒ…çš„æ–¹å¼å®‰è£…ã€‚
 
-## 3 ´î½¨¼¯Èº
+## 3 æ­å»ºé›†ç¾¤
 
-### 3.1 Ö÷»úÃû´¦Àí
+### 3.1 ä¸»æœºåå¤„ç†
 
 ```
-# Ğ´Èë hostname(node ½Úµãºó×º¸Ä³É .node)
+# å†™å…¥ hostname(node èŠ‚ç‚¹åç¼€æ”¹æˆ .node)
 echo "10-10-102-38.master" > /etc/hostname 
-# ¼ÓÈë hosts
+# åŠ å…¥ hosts
 echo "127.0.0.1   10-10-102-38.master" >> /etc/hosts
-# ²»ÖØÆôÇé¿öÏÂÊ¹ÄÚºËÉúĞ§
+# ä¸é‡å¯æƒ…å†µä¸‹ä½¿å†…æ ¸ç”Ÿæ•ˆ
 sysctl kernel.hostname=10-10-102-38.master
-# ÑéÖ¤ÊÇ·ñĞŞ¸Ä³É¹¦
+# éªŒè¯æ˜¯å¦ä¿®æ”¹æˆåŠŸ
 hostname
 10-10-102-38.master
 ```
 
-### 3.2 °²×°docker
+### 3.2 å®‰è£…docker
 
-Docker°æ±¾1.12+
+Dockerç‰ˆæœ¬1.12+
 
-£¨ÂÔ£©
+ï¼ˆç•¥ï¼‰
 
-### 3.3 load¾µÏñ
+### 3.3 loadé•œåƒ
 
 ```
 images=(kube-proxy-amd64:v1.4.5 kube-discovery-amd64:1.0 kubedns-amd64:1.7 kube-scheduler-amd64:v1.4.5 kube-controller-manager-amd64:v1.4.5 kube-apiserver-amd64:v1.4.5 etcd-amd64:2.2.5 kube-dnsmasq-amd64:1.3 exechealthz-amd64:1.1 pause-amd64:3.0 kubernetes-dashboard-amd64:v1.4.1)
@@ -65,7 +65,7 @@ for imageName in ${images[@]} ; do
 done
 ```
 
-### 3.4 °²×°¶ş½øÖÆÎÄ¼ş
+### 3.4 å®‰è£…äºŒè¿›åˆ¶æ–‡ä»¶
 
 ```
 cat <<EOF> /etc/yum.repos.d/k8s.repo
@@ -78,42 +78,42 @@ EOF
 ```
 
 ```
-# ÇåÀí»º´æ
+# æ¸…ç†ç¼“å­˜
 yum makecache
-# °²×°
+# å®‰è£…
 yum install -y socat kubelet kubeadm kubectl kubernetes-cni
 ```
 
-### 3.5 ³õÊ¼»¯master
+### 3.5 åˆå§‹åŒ–master
 
-Ê×ÏÈÆô¶¯kubelet
+é¦–å…ˆå¯åŠ¨kubelet
 
 ```
-# Æô¶¯kubelet
+# å¯åŠ¨kubelet
 systemctl enable kubelet
 systemctl start kubelet
 ```
 
-È»ºó³õÊ¼»¯master£¬¼ÇÂ¼¿ØÖÆÌ¨×îºóÒ»ĞĞÊä³öµÄtoken¡£
+ç„¶ååˆå§‹åŒ–masterï¼Œè®°å½•æ§åˆ¶å°æœ€åä¸€è¡Œè¾“å‡ºçš„tokenã€‚
 
 ```
-# master³õÊ¼»¯²¢Ö¸¶¨apiserver¼àÌıµØÖ·
+# masteråˆå§‹åŒ–å¹¶æŒ‡å®šapiserverç›‘å¬åœ°å€
 kubeadm init --api-advertise-addresses=10.10.102.38 --use-kubernetes-version v1.4.5
 ```
 
-### 3.6 ¼ÓÈënode
+### 3.6 åŠ å…¥node
 
 ```
-# node¼ÓÈë¼¯Èº
+# nodeåŠ å…¥é›†ç¾¤
 kubeadm join --token=5e0880.010ed6fd5bcbe364 10.10.102.38
 ```
 
-### 3.7 ²¿ÊğweaveÍøÂç
+### 3.7 éƒ¨ç½²weaveç½‘ç»œ
 
 ```
-# ÏÈ°ÑweaveµÄyamlÎÄ¼ş¸ãÏÂÀ´
+# å…ˆæŠŠweaveçš„yamlæ–‡ä»¶æä¸‹æ¥
 wget https://git.io/weave-kube -O weave-kube.yaml
-# È»ºópull¾µÏñ²¢tagÒ»ÏÂ
+# ç„¶åpullé•œåƒå¹¶tagä¸€ä¸‹
 docker pull huanwei/weave-kube:1.8.2
 docker tag huanwei/weave-kube:1.8.2 weaveworks/weave-kube:1.8.2
 docker rmi huanwei/weave-kube:1.8.2
@@ -122,62 +122,62 @@ docker pull huanwei/weave-npc:1.8.2
 docker tag huanwei/weave-npc:1.8.2 weaveworks/weave-npc:1.8.2
 docker rmi huanwei/weave-npc:1.8.2
 
-# °²×°¼´¿É
+# å®‰è£…å³å¯
 kubectl create -f weave-kube.yaml
 ```
 
-### 3.8 ²¿Êğdashboard
+### 3.8 éƒ¨ç½²dashboard
 
-dashboard µÄÃüÁîÒ²¸ú weave µÄÒ»Ñù£¬²»¹ıÓĞ¸ö´ó¿Ó£¬Ä¬ÈÏµÄ yaml ÎÄ¼şÖĞ¶ÔÓÚ image À­È¡²ßÂÔµÄ¶¨ÒåÊÇÎŞÂÛºÎÊ±¶¼»áÈ¥À­È¡¾µÏñ£¬µ¼ÖÂ¼´Ê¹Äã load ½øÈ¥Ò²ÎŞÂÑÓÃ£¬ËùÒÔ»¹µÃÏÈ°Ñ yaml ¸ãÏÂÀ´È»ºó¸ÄÒ»ÏÂ¾µÏñÀ­È¡²ßÂÔ£¬×îºóÔÙ create -f ¼´¿É¡£
+dashboard çš„å‘½ä»¤ä¹Ÿè·Ÿ weave çš„ä¸€æ ·ï¼Œä¸è¿‡æœ‰ä¸ªå¤§å‘ï¼Œé»˜è®¤çš„ yaml æ–‡ä»¶ä¸­å¯¹äº image æ‹‰å–ç­–ç•¥çš„å®šä¹‰æ˜¯æ— è®ºä½•æ—¶éƒ½ä¼šå»æ‹‰å–é•œåƒï¼Œå¯¼è‡´å³ä½¿ä½  load è¿›å»ä¹Ÿæ— åµç”¨ï¼Œæ‰€ä»¥è¿˜å¾—å…ˆæŠŠ yaml æä¸‹æ¥ç„¶åæ”¹ä¸€ä¸‹é•œåƒæ‹‰å–ç­–ç•¥ï¼Œæœ€åå† create -f å³å¯ã€‚
 
 ```
-# ÏÂÔØyamlÎÄ¼ş
+# ä¸‹è½½yamlæ–‡ä»¶
 wget https://rawgit.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard.yaml -O kubernetes-dashboard.yaml
 ```
 
 ```
-# ±à¼­ yaml ¸ÄÒ»ÏÂ imagePullPolicy£¬°Ñ Always ¸Ä³É IfNotPresent(±¾µØÃ»ÓĞÔÙÈ¥À­È¡) »òÕß Never(´Ó²»È¥À­È¡) £¬ÔÙĞŞ¸ÄÒ»ÏÂĞèÒªÀ­È¡µÄimage°æ±¾£¨²é¿´docker images£¬ÕâÀïÊÇv1.4.1£©
+# ç¼–è¾‘ yaml æ”¹ä¸€ä¸‹ imagePullPolicyï¼ŒæŠŠ Always æ”¹æˆ IfNotPresent(æœ¬åœ°æ²¡æœ‰å†å»æ‹‰å–) æˆ–è€… Never(ä»ä¸å»æ‹‰å–) ï¼Œå†ä¿®æ”¹ä¸€ä¸‹éœ€è¦æ‹‰å–çš„imageç‰ˆæœ¬ï¼ˆæŸ¥çœ‹docker imagesï¼Œè¿™é‡Œæ˜¯v1.4.1ï¼‰
 image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.4.1
 ```
 
 ```
-# °²×°
+# å®‰è£…
 kubectl create -f kubernetes-dashboard.yaml
 ```
 
-## 4 Óöµ½µÄÒ»Ğ©¿Ó
+## 4 é‡åˆ°çš„ä¸€äº›å‘
 
-### 4.1 ³õÊ¼»¯masterµÄÎÊÌâ
+### 4.1 åˆå§‹åŒ–masterçš„é—®é¢˜
 
 ```
-ÔÚ³õÊ¼»¯masterÊ±Óöµ½ÁËÒ»¸öÎÊÌâ£º
+åœ¨åˆå§‹åŒ–masteræ—¶é‡åˆ°äº†ä¸€ä¸ªé—®é¢˜ï¼š
 [root@k8s-master ~]# kubeadm init --api-advertise-addresses=10.10.102.38 --use-kubernetes-version v1.4.5
 Running pre-flight checks
 preflight check errors:
 	/etc/kubernetes is not empty
 ```
 
-½â¾ö°ì·¨£ºÖ´ĞĞ
+è§£å†³åŠæ³•ï¼šæ‰§è¡Œ
 
 ```
 [root@k8s-master ~]# rm -rf /etc/kubernetes/manifests/
 ```
 
-ÖØĞÂkubeadm init¼´¿É¡£
+é‡æ–°kubeadm initå³å¯ã€‚
 
-### 4.2 °²×°PodÍøÂçµÄÎÊÌâ
+### 4.2 å®‰è£…Podç½‘ç»œçš„é—®é¢˜
 
-dns podÔÚpodÍøÂç·½°¸°²×°Ö®Ç°ÊÇ²»¹¤×÷µÄ£¬podÍøÂç·½°¸°²×°ºÃÁËÖ®ºó¾Í±äÎªrunningÁË¡£
+dns podåœ¨podç½‘ç»œæ–¹æ¡ˆå®‰è£…ä¹‹å‰æ˜¯ä¸å·¥ä½œçš„ï¼Œpodç½‘ç»œæ–¹æ¡ˆå®‰è£…å¥½äº†ä¹‹åå°±å˜ä¸ºrunningäº†ã€‚
 
-### 4.3 °²×°dashboardµÄÎÊÌâ
+### 4.3 å®‰è£…dashboardçš„é—®é¢˜
 
-ÉÏÃæËµµ½µÄÄÇ¸ö´ó¿ÓÒª×¢Òâ£¬·ñÔò»áÒ»Ö±pullÔ¶³Ì¾µÏñ²»³É¹¦¡£
+ä¸Šé¢è¯´åˆ°çš„é‚£ä¸ªå¤§å‘è¦æ³¨æ„ï¼Œå¦åˆ™ä¼šä¸€ç›´pullè¿œç¨‹é•œåƒä¸æˆåŠŸã€‚
 
-### 4.4 ÍøÂçµÄÎÊÌâ
+### 4.4 ç½‘ç»œçš„é—®é¢˜
 
-¾µÏñºÍ°²×°°üÊ±Óöµ½µÄÍøÂçÎÊÌâÒÑ¾­ÈÆ¹ı»òÕß½â¾ö¡£
+é•œåƒå’Œå®‰è£…åŒ…æ—¶é‡åˆ°çš„ç½‘ç»œé—®é¢˜å·²ç»ç»•è¿‡æˆ–è€…è§£å†³ã€‚
 
-### 4.5 dashboardµØÖ·
+### 4.5 dashboardåœ°å€
 
 ```
 http://10.10.102.38:32608/#/node?namespace=default
