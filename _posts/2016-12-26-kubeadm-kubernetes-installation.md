@@ -22,13 +22,7 @@ kubernetes版本为v1.4.5
 
 需要安装的二进制文件包括：
 
-kubelet 
-
-kubeadm 
-
-kubectl 
-
-kubernetes-cni
+kubelet、kubeadm、kubectl、kubernetes-cni；
 
 其他以镜像包的方式安装。
 
@@ -39,10 +33,13 @@ kubernetes-cni
 ```
 # 写入 hostname(node 节点后缀改成 .node)
 echo "10-10-102-38.master" > /etc/hostname 
+
 # 加入 hosts
 echo "127.0.0.1   10-10-102-38.master" >> /etc/hosts
+
 # 不重启情况下使内核生效
 sysctl kernel.hostname=10-10-102-38.master
+
 # 验证是否修改成功
 hostname
 10-10-102-38.master
@@ -80,6 +77,7 @@ EOF
 ```
 # 清理缓存
 yum makecache
+
 # 安装
 yum install -y socat kubelet kubeadm kubectl kubernetes-cni
 ```
@@ -113,6 +111,7 @@ kubeadm join --token=5e0880.010ed6fd5bcbe364 10.10.102.38
 ```
 # 先把weave的yaml文件搞下来
 wget https://git.io/weave-kube -O weave-kube.yaml
+
 # 然后pull镜像并tag一下
 docker pull huanwei/weave-kube:1.8.2
 docker tag huanwei/weave-kube:1.8.2 weaveworks/weave-kube:1.8.2
@@ -150,7 +149,7 @@ kubectl create -f kubernetes-dashboard.yaml
 ### 4.1 初始化master的问题
 
 ```
-在初始化master时遇到了一个问题：
+# 在初始化master时遇到了一个问题：
 [root@k8s-master ~]# kubeadm init --api-advertise-addresses=10.10.102.38 --use-kubernetes-version v1.4.5
 Running pre-flight checks
 preflight check errors:
