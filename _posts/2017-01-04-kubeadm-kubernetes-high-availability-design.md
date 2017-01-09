@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: wiki
 title: kubernetes集群高可用架构及实现
 categories: DevOps
 description: kubernetes集群高可用架构及实现
