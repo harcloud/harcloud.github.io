@@ -9,10 +9,6 @@ keywords: Kubernetes, kubeadm
 这两天分析了一下Kubernetes中kubeadm模块的源码。
 
 
-#### 作者
-
-**魏欢**   谐云科技云计算平台架构组
-
 ### 说明
 以下源码分析基于 kubernetes v1.5.1 版本（目前的最新版本，released 8 days ago），与其他版本不一定一致。
 
@@ -689,3 +685,8 @@ func Get() Info {
 kubeadm version很简单就是获取kubeadm版本信息。
 
 分析到此结束。
+
+
+#### 作者介绍
+
+**魏欢**   谐云科技云计算平台架构组
