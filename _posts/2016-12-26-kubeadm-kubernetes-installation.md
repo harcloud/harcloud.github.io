@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 基于kubeadm部署kubernetes集群
-categories: DevOps
+categories: kubernetes
 description: 基于kubeadm部署kubernetes集群
 keywords: Kubernetes, kubeadm
 ---

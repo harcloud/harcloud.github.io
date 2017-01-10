@@ -1,7 +1,7 @@
 ---
 layout: post
 title: kubeadm源码分析
-categories: DevOps
+categories: kubernetes
 description: kubeadm源码分析
 keywords: Kubernetes, kubeadm
 ---

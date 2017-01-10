@@ -1,7 +1,7 @@
 ---
 layout: post
 title: kubernetes集群高可用架构及实现
-categories: DevOps
+categories: kubernetes
 description: kubernetes集群高可用架构及实现
 keywords: Kubernetes, kubeadm
 ---
