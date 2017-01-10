@@ -689,6 +689,4 @@ kubeadm version很简单就是获取kubeadm版本信息。
 
 ### 作者介绍
 
-<img src="assets/auth_photos/huanwei.jpg" width = "150" height = "200"  />
-
 **魏欢**   谐云科技云计算平台架构组
