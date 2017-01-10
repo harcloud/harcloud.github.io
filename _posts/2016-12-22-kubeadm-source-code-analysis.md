@@ -11,7 +11,7 @@ keywords: Kubernetes, kubeadm
 
 #### 作者
 
-**魏欢** 云计算平台架构组
+**魏欢**   谐云科技云计算平台架构组
 
 ### 说明
 以下源码分析基于 kubernetes v1.5.1 版本（目前的最新版本，released 8 days ago），与其他版本不一定一致。
